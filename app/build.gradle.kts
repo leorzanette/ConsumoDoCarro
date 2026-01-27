@@ -71,4 +71,7 @@ dependencies {
     implementation("androidx.room:room-ktx:${room_version}")
     //Ksp
     ksp("androidx.room:room-compiler:$room_version")
+    //ADMob
+    val admob_version = "24.9.0"
+    implementation("com.google.android.gms:play-services-ads:$admob_version")
 }

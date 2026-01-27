@@ -20,6 +20,9 @@ import com.lelular.consumodocarro.ui.screens.FuelHistoryScreen
 import com.lelular.consumodocarro.ui.theme.ConsumoDoCarroTheme
 import com.lelular.consumodocarro.ui.viewmodel.FuelViewModel
 import com.lelular.consumodocarro.ui.viewmodel.FuelViewModelFactory
+import com.google.android.gms.ads.MobileAds
+import com.lelular.consumodocarro.ui.ads.AdBanner
+
 
 class MainActivity : ComponentActivity() {
 
@@ -28,6 +31,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Inicializa o AdMob
+        MobileAds.initialize(this)
         // Inicializa o ViewModel
         viewModel = ViewModelProvider(
             this,
@@ -37,7 +42,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ConsumoDoCarroTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        AdBanner() // 👈 O ANÚNCIO ENTRA AQUI
+                    },
+                    topBar = {
+                        AdBanner() // 👈 O ANÚNCIO ENTRA AQUI
+                }) { innerPadding ->
                     FuelApp(
                         viewModel = viewModel,
                         modifier = Modifier.padding(innerPadding)
