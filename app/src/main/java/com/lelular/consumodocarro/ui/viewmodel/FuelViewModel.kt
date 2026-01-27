@@ -110,16 +110,20 @@ class FuelViewModel(private val repository: FuelRepository) : ViewModel() {
     private suspend fun calculateLastConsumption(entries: List<FuelEntry>): Double? {
         if (entries.size < 2) return null
 
-        val sortedEntries = entries.sortedByDescending { it.date }
-        val current = sortedEntries[0]
-        val previous = sortedEntries[1]
+        val sortedEntries = entries.sortedBy { it.odometerKm }
+        val previous = sortedEntries[sortedEntries.size - 2]
+        val current = sortedEntries.last()
 
         return repository.calculateConsumption(current, previous)
     }
 
     // Método público para calcular consumo entre dois abastecimentos
     fun calculateConsumption(currentEntry: FuelEntry, previousEntry: FuelEntry): Double? {
-        return repository.calculateConsumption(currentEntry, previousEntry)
+        val distance = currentEntry.odometerKm - previousEntry.odometerKm
+        if (distance <= 0) return 0.0
+        if (currentEntry.liters <= 0) return 0.0
+
+        return distance / currentEntry.liters
     }
 
     // Obtém o histórico de modificações de uma entrada
