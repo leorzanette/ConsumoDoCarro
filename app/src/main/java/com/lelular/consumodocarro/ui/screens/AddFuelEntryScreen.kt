@@ -44,16 +44,35 @@ import java.util.Locale
 @Composable
 fun AddFuelEntryScreen(
     viewModel: FuelViewModel,
-    onNavigateBack: () -> Unit = {}
+    entryId: Long? = null,  // Se fornecido, está editando
+    onNavigateBack: (String?) -> Unit = {}
 ) {
     var odometerKm by remember { mutableStateOf("") }
     var liters by remember { mutableStateOf("") }
     var pricePerLiter by remember { mutableStateOf("") }
     var selectedFuelType by remember { mutableStateOf(FuelType.GASOLINE) }
     var notes by remember { mutableStateOf("") }
+    var originalDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    var isLoading by remember { mutableStateOf(entryId != null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Carrega dados se estiver editando
+    androidx.compose.runtime.LaunchedEffect(entryId) {
+        if (entryId != null) {
+            val entry = viewModel.getEntryById(entryId)
+            if (entry != null) {
+                odometerKm = entry.odometerKm.toString()
+                liters = entry.liters.toString()
+                pricePerLiter = entry.pricePerLiter.toString()
+                selectedFuelType = entry.fuelType
+                notes = entry.notes
+                originalDate = entry.date
+            }
+            isLoading = false
+        }
+    }
 
     // Calcula o preço total automaticamente
     val totalPrice = remember(liters, pricePerLiter) {
@@ -64,7 +83,7 @@ fun AddFuelEntryScreen(
 
     // Intercepta o botão voltar do Android
     BackHandler {
-        onNavigateBack()
+        onNavigateBack(null)
     }
 
     Scaffold(
@@ -80,7 +99,7 @@ fun AddFuelEntryScreen(
         ) {
             // Título
             Text(
-                text = "Novo Abastecimento",
+                text = if (entryId == null) "Novo Abastecimento" else "Editar Abastecimento",
                 style = MaterialTheme.typography.headlineMedium
             )
 
@@ -100,7 +119,7 @@ fun AddFuelEntryScreen(
                     )
                     Text(
                         text = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-                            .format(Date()),
+                            .format(Date(originalDate)),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -205,7 +224,7 @@ fun AddFuelEntryScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = onNavigateBack,
+                    onClick = { onNavigateBack(null) },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Cancelar")
@@ -235,22 +254,35 @@ fun AddFuelEntryScreen(
                                 }
                             }
                             else -> {
-                                // Criar entrada
-                                val entry = FuelEntry(
-                                    date = System.currentTimeMillis(),
-                                    odometerKm = odometerValue,
-                                    liters = litersValue,
-                                    fuelType = selectedFuelType,
-                                    pricePerLiter = priceValue,
-                                    totalPrice = totalPrice,
-                                    notes = notes.trim()
-                                )
+                                if (entryId == null) {
+                                    // Criar nova entrada
+                                    val entry = FuelEntry(
+                                        date = System.currentTimeMillis(),
+                                        odometerKm = odometerValue,
+                                        liters = litersValue,
+                                        fuelType = selectedFuelType,
+                                        pricePerLiter = priceValue,
+                                        totalPrice = totalPrice,
+                                        notes = notes.trim()
+                                    )
 
-                                viewModel.insertEntry(entry)
+                                    viewModel.insertEntry(entry)
+                                    onNavigateBack("Abastecimento registrado!")
+                                } else {
+                                    // Editar entrada existente
+                                    val entry = FuelEntry(
+                                        id = entryId,
+                                        date = originalDate,  // Mantém data original
+                                        odometerKm = odometerValue,
+                                        liters = litersValue,
+                                        fuelType = selectedFuelType,
+                                        pricePerLiter = priceValue,
+                                        totalPrice = totalPrice,
+                                        notes = notes.trim()
+                                    )
 
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Abastecimento registrado!")
-                                    onNavigateBack()
+                                    viewModel.updateEntryWithHistory(entry)
+                                    onNavigateBack("Abastecimento atualizado!")
                                 }
                             }
                         }

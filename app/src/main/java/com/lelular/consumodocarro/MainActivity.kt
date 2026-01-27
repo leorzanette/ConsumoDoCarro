@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.lelular.consumodocarro.ui.screens.AddFuelEntryScreen
+import com.lelular.consumodocarro.ui.screens.EntryHistoryScreen
 import com.lelular.consumodocarro.ui.screens.FuelHistoryScreen
 import com.lelular.consumodocarro.ui.theme.ConsumoDoCarroTheme
 import com.lelular.consumodocarro.ui.viewmodel.FuelViewModel
@@ -47,9 +48,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class Screen {
-    HISTORY,
-    ADD_ENTRY
+sealed class Screen {
+    data class History(val successMessage: String? = null) : Screen()
+    data class AddEntry(val entryId: Long? = null) : Screen()
+    data class EntryHistory(val entryId: Long) : Screen()
 }
 
 @Composable
@@ -57,20 +59,32 @@ fun FuelApp(
     viewModel: FuelViewModel,
     modifier: Modifier = Modifier
 ) {
-    var currentScreen by remember { mutableStateOf(Screen.HISTORY) }
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.History()) }
 
-    when (currentScreen) {
-        Screen.HISTORY -> {
+    when (val screen = currentScreen) {
+        is Screen.History -> {
             FuelHistoryScreen(
                 viewModel = viewModel,
-                onAddClick = { currentScreen = Screen.ADD_ENTRY }
+                onAddClick = { currentScreen = Screen.AddEntry() },
+                onEditClick = { entryId -> currentScreen = Screen.AddEntry(entryId) },
+                onHistoryClick = { entryId -> currentScreen = Screen.EntryHistory(entryId) },
+                successMessage = screen.successMessage
             )
         }
 
-        Screen.ADD_ENTRY -> {
+        is Screen.AddEntry -> {
             AddFuelEntryScreen(
                 viewModel = viewModel,
-                onNavigateBack = { currentScreen = Screen.HISTORY }
+                entryId = screen.entryId,
+                onNavigateBack = { message -> currentScreen = Screen.History(message) }
+            )
+        }
+
+        is Screen.EntryHistory -> {
+            EntryHistoryScreen(
+                viewModel = viewModel,
+                entryId = screen.entryId,
+                onNavigateBack = { currentScreen = Screen.History() }
             )
         }
     }

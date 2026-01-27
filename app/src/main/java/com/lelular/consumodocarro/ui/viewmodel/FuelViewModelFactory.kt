@@ -10,7 +10,10 @@ class FuelViewModelFactory(private val context: Context) : ViewModelProvider.Fac
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(FuelViewModel::class.java)) {
             val database = AppDatabase.getDatabase(context)
-            val repository = FuelRepository(database.fuelEntryDao())
+            val repository = FuelRepository(
+                database.fuelEntryDao(),
+                database.fuelEntryHistoryDao()
+            )
             @Suppress("UNCHECKED_CAST")
             return FuelViewModel(repository) as T
         }

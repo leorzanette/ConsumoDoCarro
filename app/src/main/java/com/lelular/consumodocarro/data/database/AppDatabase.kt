@@ -7,18 +7,21 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.lelular.consumodocarro.data.dao.FuelEntryDao
+import com.lelular.consumodocarro.data.dao.FuelEntryHistoryDao
 import com.lelular.consumodocarro.data.entity.FuelEntry
+import com.lelular.consumodocarro.data.entity.FuelEntryHistory
 import com.lelular.consumodocarro.data.entity.FuelType
 
 @Database(
-    entities = [FuelEntry::class],
-    version = 1,
+    entities = [FuelEntry::class, FuelEntryHistory::class],
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun fuelEntryDao(): FuelEntryDao
+    abstract fun fuelEntryHistoryDao(): FuelEntryHistoryDao
 
     companion object {
         @Volatile

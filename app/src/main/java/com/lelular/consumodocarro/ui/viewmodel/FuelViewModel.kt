@@ -77,6 +77,16 @@ class FuelViewModel(private val repository: FuelRepository) : ViewModel() {
         }
     }
 
+    fun updateEntryWithHistory(entry: FuelEntry) {
+        viewModelScope.launch {
+            try {
+                repository.updateWithHistory(entry)
+            } catch (e: Exception) {
+                _uiState.value = FuelUiState.Error("Erro ao atualizar: ${e.message}")
+            }
+        }
+    }
+
     fun deleteEntry(entry: FuelEntry) {
         viewModelScope.launch {
             try {
@@ -111,4 +121,10 @@ class FuelViewModel(private val repository: FuelRepository) : ViewModel() {
     fun calculateConsumption(currentEntry: FuelEntry, previousEntry: FuelEntry): Double? {
         return repository.calculateConsumption(currentEntry, previousEntry)
     }
+
+    // Obtém o histórico de modificações de uma entrada
+    fun getHistoryForEntry(entryId: Long) = repository.getHistoryForEntry(entryId)
+
+    // Obtém uma entrada pelo ID
+    suspend fun getEntryById(id: Long) = repository.getEntryById(id)
 }

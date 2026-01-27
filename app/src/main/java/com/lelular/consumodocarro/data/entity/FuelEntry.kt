@@ -13,7 +13,9 @@ data class FuelEntry(
     val fuelType: FuelType,            // Tipo de combustível (gasolina ou etanol)
     val pricePerLiter: Double,         // Preço por litro
     val totalPrice: Double,            // Preço total do abastecimento
-    val notes: String = ""             // Observações opcionais
+    val notes: String = "",            // Observações opcionais
+    val createdAt: Long = System.currentTimeMillis(),  // Data de criação
+    val lastModifiedAt: Long = System.currentTimeMillis()  // Última modificação
 )
 
 enum class FuelType {

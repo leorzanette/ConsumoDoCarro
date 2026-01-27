@@ -13,18 +13,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +42,7 @@ import com.lelular.consumodocarro.data.entity.FuelEntry
 import com.lelular.consumodocarro.data.entity.FuelType
 import com.lelular.consumodocarro.ui.viewmodel.FuelUiState
 import com.lelular.consumodocarro.ui.viewmodel.FuelViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,11 +50,29 @@ import java.util.Locale
 @Composable
 fun FuelHistoryScreen(
     viewModel: FuelViewModel,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onEditClick: (Long) -> Unit = {},
+    onHistoryClick: (Long) -> Unit = {},
+    successMessage: String? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // Mostra mensagem de sucesso quando fornecida
+    LaunchedEffect(successMessage) {
+        successMessage?.let {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = it,
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
                 Icon(Icons.Default.Add, contentDescription = "Adicionar abastecimento")
@@ -83,7 +111,12 @@ fun FuelHistoryScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Lista de abastecimentos
-                        FuelEntriesList(entries = state.entries, viewModel = viewModel)
+                        FuelEntriesList(
+                            entries = state.entries,
+                            viewModel = viewModel,
+                            onEditClick = onEditClick,
+                            onHistoryClick = onHistoryClick
+                        )
                     }
                 }
 
@@ -195,7 +228,12 @@ fun StatisticsCard(entries: List<FuelEntry>, viewModel: FuelViewModel) {
 }
 
 @Composable
-fun FuelEntriesList(entries: List<FuelEntry>, viewModel: FuelViewModel) {
+fun FuelEntriesList(
+    entries: List<FuelEntry>,
+    viewModel: FuelViewModel,
+    onEditClick: (Long) -> Unit,
+    onHistoryClick: (Long) -> Unit
+) {
     val sortedEntries = entries.sortedByDescending { it.date }
 
     LazyColumn(
@@ -213,7 +251,9 @@ fun FuelEntriesList(entries: List<FuelEntry>, viewModel: FuelViewModel) {
             FuelEntryItem(
                 entry = entry,
                 consumption = consumption,
-                isFirst = index == 0
+                isFirst = index == 0,
+                onEditClick = { onEditClick(entry.id) },
+                onHistoryClick = { onHistoryClick(entry.id) }
             )
         }
     }
@@ -223,7 +263,9 @@ fun FuelEntriesList(entries: List<FuelEntry>, viewModel: FuelViewModel) {
 fun FuelEntryItem(
     entry: FuelEntry,
     consumption: Double?,
-    isFirst: Boolean
+    isFirst: Boolean,
+    onEditClick: () -> Unit = {},
+    onHistoryClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -253,14 +295,35 @@ fun FuelEntryItem(
                     )
                 }
 
-                Text(
-                    text = when (entry.fuelType) {
-                        FuelType.GASOLINE -> "Gasolina"
-                        FuelType.ETHANOL -> "Etanol"
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = when (entry.fuelType) {
+                            FuelType.GASOLINE -> "Gasolina"
+                            FuelType.ETHANOL -> "Etanol"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    androidx.compose.material3.IconButton(onClick = onHistoryClick) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "Ver histórico",
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    androidx.compose.material3.IconButton(onClick = onEditClick) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
