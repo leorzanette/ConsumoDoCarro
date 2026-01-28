@@ -44,6 +44,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
 }
@@ -67,19 +68,19 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     //Room
-    val room_version = "2.8.4"
+    val roomVersion = "2.8.4"
 
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:${room_version}")
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:${roomVersion}")
     //Ksp
-    ksp("androidx.room:room-compiler:$room_version")
+    ksp("androidx.room:room-compiler:$roomVersion")
     //ADMob
-    val admob_version = "24.9.0"
-    implementation("com.google.android.gms:play-services-ads:$admob_version")
+    val admobVersion = "24.9.0"
+    implementation("com.google.android.gms:play-services-ads:$admobVersion")
 
     //Firebase
-    val firebase_version = "34.8.0"
-    implementation(platform("com.google.firebase:firebase-bom:$firebase_version"))
+    val firebaseVersion = "34.8.0"
+    implementation(platform("com.google.firebase:firebase-bom:$firebaseVersion"))
     implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-analytics")
 
