@@ -35,4 +35,7 @@ interface FuelEntryDao {
 
     @Query("DELETE FROM fuel_entries")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM fuel_entries ORDER BY date DESC")
+    suspend fun getAllEntriesSync(): List<FuelEntry>
 }

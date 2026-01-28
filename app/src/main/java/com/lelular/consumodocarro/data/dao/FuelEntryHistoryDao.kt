@@ -23,4 +23,10 @@ interface FuelEntryHistoryDao {
 
     @Query("DELETE FROM fuel_entry_history WHERE entryId = :entryId")
     suspend fun deleteHistoryForEntry(entryId: Long)
+
+    @Query("SELECT * FROM fuel_entry_history ORDER BY modifiedAt DESC")
+    suspend fun getAllHistorySync(): List<FuelEntryHistory>
+
+    @Query("DELETE FROM fuel_entry_history")
+    suspend fun deleteAll()
 }

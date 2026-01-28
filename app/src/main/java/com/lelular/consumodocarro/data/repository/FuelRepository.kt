@@ -173,11 +173,11 @@ class FuelRepository(
      * @return Consumo em km/l ou null se não for possível calcular
      */
     fun calculateConsumption(currentEntry: FuelEntry, previousEntry: FuelEntry): Double? {
-        val kmTraveled = currentEntry.odometerKm - previousEntry.odometerKm
-        if (kmTraveled <= 0 || previousEntry.liters <= 0) {
-            return null
-        }
-        return kmTraveled / previousEntry.liters
+        val distance = currentEntry.odometerKm - previousEntry.odometerKm
+        if (distance <= 0) return 0.0
+        if (currentEntry.liters <= 0) return 0.0
+
+        return distance / currentEntry.liters
     }
 
     /**
@@ -192,5 +192,42 @@ class FuelRepository(
      */
     suspend fun getHistoryForEntrySync(entryId: Long): List<FuelEntryHistory> {
         return historyDao.getHistoryForEntrySync(entryId)
+    }
+
+    // Export/Import support methods
+
+    /**
+     * Get all entries synchronously (for export)
+     */
+    suspend fun getAllEntriesSync(): List<FuelEntry> {
+        return fuelEntryDao.getAllEntriesSync()
+    }
+
+    /**
+     * Get all history records synchronously (for export)
+     */
+    suspend fun getAllHistorySync(): List<FuelEntryHistory> {
+        return historyDao.getAllHistorySync()
+    }
+
+    /**
+     * Insert entry with specific ID (for import REPLACE mode)
+     */
+    suspend fun insertWithId(entry: FuelEntry) {
+        fuelEntryDao.insert(entry)
+    }
+
+    /**
+     * Insert history records (for import)
+     */
+    suspend fun insertHistory(historyEntries: List<FuelEntryHistory>) {
+        historyDao.insertAll(historyEntries)
+    }
+
+    /**
+     * Delete all history records
+     */
+    suspend fun deleteAllHistory() {
+        historyDao.deleteAll()
     }
 }

@@ -13,3 +13,21 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Firebase configuration
+google-services.json
+app/google-services.json
+
+# Release builds
+app/release/
+*.aab
+*.apk
+
+# MD Files
+chatgpt.md
+DATABASE_MIGRATION_STRATEGY.md
+FIREBASE_SETUP.md
+PLANO_DE_TESTES.md
+QUICKSTART.md
+TESTING_GUIDE.md
+VERSION_1.0.1_IMPLEMENTATION.md

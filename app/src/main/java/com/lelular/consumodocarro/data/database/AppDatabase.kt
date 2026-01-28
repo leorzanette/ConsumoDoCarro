@@ -15,7 +15,7 @@ import com.lelular.consumodocarro.data.entity.FuelType
 @Database(
     entities = [FuelEntry::class, FuelEntryHistory::class],
     version = 2,
-    exportSchema = false
+    exportSchema = true  // Changed to true to track schema changes
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -34,7 +34,41 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "consumo_carro_database"
                 )
+                    // Add migrations here when schema changes
+                    // .addMigrations(MIGRATION_2_3, MIGRATION_3_4, etc.)
+
+                    // For now, using destructive migration during beta
+                    // In production, replace with proper migrations
                     .fallbackToDestructiveMigration()
+
+                    // Optional: Enable this for production to catch migration issues
+                    // .fallbackToDestructiveMigrationOnDowngrade()
+
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+
+        /**
+         * Production-ready database configuration
+         * Use this when ready to deploy with proper migrations
+         */
+        fun getDatabaseWithMigrations(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "consumo_carro_database"
+                )
+                    // Add all migrations in sequence
+                    // .addMigrations(MIGRATION_2_3)
+                    // .addMigrations(MIGRATION_3_4)
+                    // .addMigrations(MIGRATION_4_5)
+
+                    // Only use destructive migration on downgrade
+                    .fallbackToDestructiveMigrationOnDowngrade()
+
                     .build()
                 INSTANCE = instance
                 instance

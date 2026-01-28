@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 kotlin {
     compilerOptions{
@@ -74,4 +76,13 @@ dependencies {
     //ADMob
     val admob_version = "24.9.0"
     implementation("com.google.android.gms:play-services-ads:$admob_version")
+
+    //Firebase
+    val firebase_version = "34.8.0"
+    implementation(platform("com.google.firebase:firebase-bom:$firebase_version"))
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-analytics")
+
+    //Gson for JSON export/import
+    implementation("com.google.code.gson:gson:2.11.0")
 }

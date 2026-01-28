@@ -1,8 +1,12 @@
 package com.lelular.consumodocarro.ui.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lelular.consumodocarro.data.entity.FuelEntry
+import com.lelular.consumodocarro.data.export.DataExportImport
+import com.lelular.consumodocarro.data.export.ImportMode
 import com.lelular.consumodocarro.data.repository.FuelRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -131,4 +135,21 @@ class FuelViewModel(private val repository: FuelRepository) : ViewModel() {
 
     // Obtém uma entrada pelo ID
     suspend fun getEntryById(id: Long) = repository.getEntryById(id)
+
+    // Export/Import functionality
+    private var dataExportImport: DataExportImport? = null
+
+    fun initializeExportImport(context: Context) {
+        dataExportImport = DataExportImport(repository, context)
+    }
+
+    suspend fun exportData(uri: Uri): Result<String> {
+        return dataExportImport?.exportToFile(uri)
+            ?: Result.failure(Exception("Export/Import not initialized"))
+    }
+
+    suspend fun importData(uri: Uri, mode: ImportMode): Result<String> {
+        return dataExportImport?.importFromFile(uri, mode)
+            ?: Result.failure(Exception("Export/Import not initialized"))
+    }
 }
